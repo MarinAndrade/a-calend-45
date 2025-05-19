@@ -3,6 +3,7 @@ import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, Tabl
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Student } from "./StudentList";
+import { useEffect } from "react";
 
 type AttendanceStatus = 'present' | 'absent' | 'justified';
 
@@ -16,11 +17,18 @@ type EnhancedStudentListProps = {
 const EnhancedStudentList = ({ date, students, attendanceRecords, onAttendanceChange }: EnhancedStudentListProps) => {
   const dateStr = date.toISOString().split('T')[0];
   
+  // Set all students as present by default when the component mounts or date changes
+  useEffect(() => {
+    students.forEach(student => {
+      // Only set as present if there's no record for this date yet
+      if (attendanceRecords[student.id]?.[dateStr] === undefined) {
+        onAttendanceChange(student.id, dateStr, true);
+      }
+    });
+  }, [students, dateStr, onAttendanceChange]);
+  
   const handleAttendanceChange = (studentId: string, status: AttendanceStatus) => {
-    // Para simplicidade, consideramos que:
-    // - 'present' = presença (true)
-    // - 'absent' ou 'justified' = falta (false)
-    // No futuro, podemos estender o sistema para diferenciar faltas justificadas
+    // Present = true, Absent = false, Justified = special case handled in Turmas component
     const isPresent = status === 'present';
     
     onAttendanceChange(studentId, dateStr, isPresent);
@@ -50,7 +58,6 @@ const EnhancedStudentList = ({ date, students, attendanceRecords, onAttendanceCh
         <TableHeader>
           <TableRow>
             <TableHead>Nome</TableHead>
-            <TableHead>Matrícula</TableHead>
             <TableHead className="text-center">Presente</TableHead>
             <TableHead className="text-center">Falta</TableHead>
             <TableHead className="text-center">Justificado</TableHead>
@@ -63,7 +70,6 @@ const EnhancedStudentList = ({ date, students, attendanceRecords, onAttendanceCh
             return (
               <TableRow key={student.id}>
                 <TableCell className="font-medium">{student.name}</TableCell>
-                <TableCell>{student.registration}</TableCell>
                 <TableCell className="text-center">
                   <Checkbox 
                     checked={isPresent}
@@ -87,7 +93,7 @@ const EnhancedStudentList = ({ date, students, attendanceRecords, onAttendanceCh
           
           {students.length === 0 && (
             <TableRow>
-              <TableCell colSpan={5} className="text-center py-4">
+              <TableCell colSpan={4} className="text-center py-4">
                 Nenhum aluno encontrado.
               </TableCell>
             </TableRow>

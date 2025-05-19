@@ -1,4 +1,5 @@
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -79,9 +80,9 @@ const Turmas = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [students, setStudents] = useState<Student[]>(mockStudents);
   const [attendanceRecords, setAttendanceRecords] = useState<Record<string, Record<string, boolean>>>({});
-  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [justifiedAbsences, setJustifiedAbsences] = useState<Record<string, Record<string, boolean>>>({});
   
-  // Handle attendance change - reutilizando o código existente
+  // Handle attendance change
   const handleAttendanceChange = (studentId: string, date: string, isPresent: boolean) => {
     setAttendanceRecords(prev => ({
       ...prev,
@@ -90,9 +91,20 @@ const Turmas = () => {
         [date]: isPresent
       }
     }));
+
+    // If marking as present or absent, remove any justified absence record
+    if (justifiedAbsences[studentId]?.[date]) {
+      setJustifiedAbsences(prev => ({
+        ...prev,
+        [studentId]: {
+          ...(prev[studentId] || {}),
+          [date]: false
+        }
+      }));
+    }
   };
   
-  // Handle adding a new student - reutilizando o código existente
+  // Handle adding a new student
   const handleAddStudent = (student: Student) => {
     setStudents(prev => [...prev, student]);
   };
@@ -100,7 +112,6 @@ const Turmas = () => {
   // Handle selecting a student for report card view
   const handleSelectStudent = (student: Student) => {
     setSelectedStudent(student);
-    // Não navegamos mais automaticamente aqui, apenas definimos o estado
   };
   
   // Navegação para o boletim em tela cheia
@@ -132,6 +143,8 @@ const Turmas = () => {
               selectedDate={selectedDate} 
               onDateChange={setSelectedDate}
               attendanceRecords={attendanceRecords}
+              justifiedAbsences={justifiedAbsences}
+              showAbsences={true}
             />
           </div>
           
@@ -140,6 +153,7 @@ const Turmas = () => {
               students={students} 
               selectedDate={selectedDate}
               attendanceRecords={attendanceRecords}
+              justifiedAbsences={justifiedAbsences}
             />
             
             <Tabs defaultValue="attendance" className="mt-6">
@@ -180,7 +194,6 @@ const Turmas = () => {
                         >
                           <div>
                             <h3 className="font-medium">{student.name}</h3>
-                            <p className="text-sm text-muted-foreground">Matrícula: {student.registration}</p>
                           </div>
                         </div>
                       ))}
