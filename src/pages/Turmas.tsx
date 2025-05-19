@@ -1,24 +1,16 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ExternalLink } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Navbar from '@/components/Navbar';
 import StudentList, { Student } from '@/components/StudentList';
-import EnhancedStudentList from '@/components/EnhancedStudentList';
 import AttendanceCalendar from '@/components/AttendanceCalendar';
 import AttendanceStats from '@/components/AttendanceStats';
+import StudentForm from '@/components/StudentForm';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarDays, ListCheck, User } from "lucide-react";
-import { 
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu"
+import { CalendarDays, ListCheck, User, FileText } from "lucide-react";
 
 // Mock data for initial students - reutilizando o código existente
 const mockStudents: Student[] = [
@@ -88,9 +80,9 @@ const Turmas = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [students, setStudents] = useState<Student[]>(mockStudents);
   const [attendanceRecords, setAttendanceRecords] = useState<Record<string, Record<string, boolean>>>({});
-  const [justifiedAbsences, setJustifiedAbsences] = useState<Record<string, Record<string, boolean>>>({});
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   
-  // Handle attendance change
+  // Handle attendance change - reutilizando o código existente
   const handleAttendanceChange = (studentId: string, date: string, isPresent: boolean) => {
     setAttendanceRecords(prev => ({
       ...prev,
@@ -99,44 +91,17 @@ const Turmas = () => {
         [date]: isPresent
       }
     }));
-
-    // If marking as present or absent, remove any justified absence record
-    if (justifiedAbsences[studentId]?.[date]) {
-      setJustifiedAbsences(prev => ({
-        ...prev,
-        [studentId]: {
-          ...(prev[studentId] || {}),
-          [date]: false
-        }
-      }));
-    }
   };
   
-  // Handle adding a new student
+  // Handle adding a new student - reutilizando o código existente
   const handleAddStudent = (student: Student) => {
     setStudents(prev => [...prev, student]);
   };
-  
-  // Handle justified absence
-  const handleJustifiedAbsence = (studentId: string, date: string, isJustified: boolean) => {
-    setJustifiedAbsences(prev => ({
-      ...prev,
-      [studentId]: {
-        ...(prev[studentId] || {}),
-        [date]: isJustified
-      }
-    }));
-    
-    // If justified, also mark as absent (not present)
-    if (isJustified) {
-      setAttendanceRecords(prev => ({
-        ...prev,
-        [studentId]: {
-          ...(prev[studentId] || {}),
-          [date]: false
-        }
-      }));
-    }
+
+  // Handle selecting a student for report card view
+  const handleSelectStudent = (student: Student) => {
+    setSelectedStudent(student);
+    // Não navegamos mais automaticamente aqui, apenas definimos o estado
   };
   
   // Navegação para o boletim em tela cheia
@@ -161,76 +126,153 @@ const Turmas = () => {
         </div>
       </header>
       
-      <main className="container mx-auto py-6 px-4">
-        <NavigationMenu className="mb-6">
-          <NavigationMenuList>
-            <NavigationMenuItem>
-              <NavigationMenuLink className="cursor-pointer block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
-                Chamada
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <NavigationMenuLink 
-                className="cursor-pointer block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                onClick={() => navigate("/gerenciar")}
-              >
-                Gerenciar
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <NavigationMenuLink 
-                className="cursor-pointer block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                onClick={() => navigate("/boletim")}
-              >
-                Boletim
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-          </NavigationMenuList>
-        </NavigationMenu>
-        
+      <main className="container py-6">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           <div className="md:col-span-1">
             <AttendanceCalendar 
               selectedDate={selectedDate} 
               onDateChange={setSelectedDate}
               attendanceRecords={attendanceRecords}
-              justifiedAbsences={justifiedAbsences}
-              showAbsences={true}
             />
           </div>
           
           <div className="md:col-span-1 lg:col-span-2">
-            {/* MOVED: Chamada section to the top */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <ListCheck className="h-5 w-5" />
-                  Chamada
-                </CardTitle>
-                <CardDescription>
-                  {selectedDate.toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <EnhancedStudentList 
+            <AttendanceStats 
+              students={students} 
+              selectedDate={selectedDate}
+              attendanceRecords={attendanceRecords}
+            />
+            
+            <Tabs defaultValue="attendance" className="mt-6">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="attendance">
+                  <ListCheck className="h-4 w-4 mr-2" />
+                  Presenças
+                </TabsTrigger>
+                <TabsTrigger value="students">
+                  <User className="h-4 w-4 mr-2" />
+                  Alunos
+                </TabsTrigger>
+                <TabsTrigger value="add-student">
+                  <CalendarDays className="h-4 w-4 mr-2" />
+                  Adicionar Aluno
+                </TabsTrigger>
+                <TabsTrigger value="report-card">
+                  <FileText className="h-4 w-4 mr-2" />
+                  Boletim
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="attendance" className="mt-4">
+                <StudentList 
                   date={selectedDate}
                   students={students}
                   attendanceRecords={attendanceRecords}
                   onAttendanceChange={handleAttendanceChange}
-                  onJustifiedAbsence={handleJustifiedAbsence}
-                  justifiedAbsences={justifiedAbsences}
                 />
-              </CardContent>
-            </Card>
-            
-            {/* MOVED: Attendance stats to the bottom */}
-            <div className="mt-6">
-              <AttendanceStats 
-                students={students} 
-                selectedDate={selectedDate}
-                attendanceRecords={attendanceRecords}
-              />
-            </div>
+              </TabsContent>
+              
+              <TabsContent value="students" className="mt-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Lista de Alunos</CardTitle>
+                    <CardDescription>
+                      Total de {students.length} alunos registrados
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {students.map(student => (
+                        <div 
+                          key={student.id} 
+                          className="flex justify-between items-center p-3 bg-white border rounded-md hover:bg-gray-50 cursor-pointer"
+                          onClick={() => handleSelectStudent(student)}
+                        >
+                          <div>
+                            <h3 className="font-medium">{student.name}</h3>
+                            <p className="text-sm text-muted-foreground">Matrícula: {student.registration}</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button variant="ghost" size="sm" onClick={(e) => {
+                              e.stopPropagation();
+                              handleSelectStudent(student);
+                            }}>
+                              <FileText className="h-4 w-4 mr-2" />
+                              Ver Boletim
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={(e) => {
+                              e.stopPropagation();
+                              navigateToFullReportCard(student.id);
+                            }}>
+                              <ExternalLink className="h-4 w-4 mr-2" />
+                              Tela Completa
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="add-student" className="mt-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Adicionar Novo Aluno</CardTitle>
+                    <CardDescription>
+                      Preencha os dados para adicionar um novo aluno à lista
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <StudentForm onAddStudent={handleAddStudent} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="report-card" className="mt-4">
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between">
+                    <div>
+                      <CardTitle>Boletim Escolar</CardTitle>
+                      <CardDescription>
+                        {selectedStudent 
+                          ? `Visualizando boletim de ${selectedStudent.name}`
+                          : 'Selecione um aluno na aba "Alunos" para visualizar o boletim'}
+                      </CardDescription>
+                    </div>
+                    {selectedStudent && (
+                      <Button variant="outline" size="sm" onClick={() => navigateToFullReportCard(selectedStudent.id)}>
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Ver em Tela Completa
+                      </Button>
+                    )}
+                  </CardHeader>
+                  <CardContent>
+                    {selectedStudent ? (
+                      <div className="max-h-[600px] overflow-y-auto pr-2">
+                        <StudentReportCard 
+                          studentName={selectedStudent.name}
+                          sections={reportCardSections}
+                        />
+                      </div>
+                    ) : (
+                      <div className="text-center py-10">
+                        <FileText className="h-20 w-20 mx-auto text-gray-300 mb-4" />
+                        <p className="text-gray-500">Nenhum aluno selecionado</p>
+                        <Button 
+                          variant="outline" 
+                          onClick={() => navigate('/boletim')} 
+                          className="mt-4"
+                        >
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          Ir para página de boletins
+                        </Button>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
       </main>

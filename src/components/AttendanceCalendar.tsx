@@ -9,42 +9,31 @@ type AttendanceCalendarProps = {
   selectedDate: Date;
   onDateChange: (date: Date) => void;
   attendanceRecords: Record<string, Record<string, boolean>>;
-  justifiedAbsences?: Record<string, Record<string, boolean>>;
-  showAbsences?: boolean;
 };
 
-const AttendanceCalendar = ({ 
-  selectedDate, 
-  onDateChange, 
-  attendanceRecords,
-  justifiedAbsences = {},
-  showAbsences = true
-}: AttendanceCalendarProps) => {
-  const [absenceDays, setAbsenceDays] = useState<Record<string, number>>({});
+const AttendanceCalendar = ({ selectedDate, onDateChange, attendanceRecords }: AttendanceCalendarProps) => {
+  const [attendanceDays, setAttendanceDays] = useState<Record<string, number>>({});
   
   useEffect(() => {
-    // Calculate days with absence records
+    // Calculate days with attendance records
     const days: Record<string, number> = {};
     
-    // Count students absent for each day (not present and not justified)
-    Object.entries(attendanceRecords).forEach(([studentId, studentRecords]) => {
+    // Count students present for each day
+    Object.values(attendanceRecords).forEach(studentRecords => {
       Object.entries(studentRecords).forEach(([date, isPresent]) => {
-        // If not present and not justified, count as absence
-        const isJustified = justifiedAbsences[studentId]?.[date] || false;
-        
-        if (!isPresent && !isJustified) {
+        if (isPresent) {
           days[date] = (days[date] || 0) + 1;
         }
       });
     });
     
-    setAbsenceDays(days);
-  }, [attendanceRecords, justifiedAbsences]);
+    setAttendanceDays(days);
+  }, [attendanceRecords]);
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Calendário</CardTitle>
+        <CardTitle>Calendário de Presença</CardTitle>
         <CardDescription>
           Selecione uma data para gerenciar a presença
         </CardDescription>
@@ -57,25 +46,25 @@ const AttendanceCalendar = ({
           className="rounded-md border p-3 pointer-events-auto"
           locale={ptBR}
           modifiers={{
-            hasAbsences: Object.keys(absenceDays).map(day => new Date(day)),
+            hasAttendance: Object.keys(attendanceDays).map(day => new Date(day)),
           }}
           modifiersStyles={{
-            hasAbsences: { 
-              backgroundColor: 'rgba(239, 68, 68, 0.1)',
-              borderBottom: '2px solid #ef4444' 
+            hasAttendance: { 
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              borderBottom: '2px solid var(--primary)' 
             }
           }}
           components={{
             DayContent: ({ date }) => {
               const dateStr = format(date, 'yyyy-MM-dd');
-              const absenceCount = absenceDays[dateStr];
+              const attendanceCount = attendanceDays[dateStr];
               
               return (
                 <div className="flex flex-col items-center">
                   <span>{format(date, 'd')}</span>
-                  {absenceCount > 0 && (
-                    <span className="text-[10px] text-red-500 font-medium mt-1">
-                      {absenceCount}
+                  {attendanceCount > 0 && (
+                    <span className="text-[10px] text-primary font-medium mt-1">
+                      {attendanceCount}
                     </span>
                   )}
                 </div>
