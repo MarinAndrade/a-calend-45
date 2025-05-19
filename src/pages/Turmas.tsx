@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Navbar from '@/components/Navbar';
 import StudentList, { Student } from '@/components/StudentList';
+import EnhancedStudentList from '@/components/EnhancedStudentList';
 import AttendanceCalendar from '@/components/AttendanceCalendar';
 import AttendanceStats from '@/components/AttendanceStats';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
