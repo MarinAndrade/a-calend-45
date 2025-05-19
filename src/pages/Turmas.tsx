@@ -1,16 +1,14 @@
-
 import { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ExternalLink } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Navbar from '@/components/Navbar';
 import StudentList, { Student } from '@/components/StudentList';
 import AttendanceCalendar from '@/components/AttendanceCalendar';
 import AttendanceStats from '@/components/AttendanceStats';
-import StudentForm from '@/components/StudentForm';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarDays, ListCheck, User, FileText } from "lucide-react";
+import { CalendarDays, ListCheck, User } from "lucide-react";
 
 // Mock data for initial students - reutilizando o código existente
 const mockStudents: Student[] = [
@@ -144,7 +142,7 @@ const Turmas = () => {
             />
             
             <Tabs defaultValue="attendance" className="mt-6">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="attendance">
                   <ListCheck className="h-4 w-4 mr-2" />
                   Presenças
@@ -153,18 +151,10 @@ const Turmas = () => {
                   <User className="h-4 w-4 mr-2" />
                   Alunos
                 </TabsTrigger>
-                <TabsTrigger value="add-student">
-                  <CalendarDays className="h-4 w-4 mr-2" />
-                  Adicionar Aluno
-                </TabsTrigger>
-                <TabsTrigger value="report-card">
-                  <FileText className="h-4 w-4 mr-2" />
-                  Boletim
-                </TabsTrigger>
               </TabsList>
               
               <TabsContent value="attendance" className="mt-4">
-                <StudentList 
+                <EnhancedStudentList 
                   date={selectedDate}
                   students={students}
                   attendanceRecords={attendanceRecords}
@@ -185,90 +175,15 @@ const Turmas = () => {
                       {students.map(student => (
                         <div 
                           key={student.id} 
-                          className="flex justify-between items-center p-3 bg-white border rounded-md hover:bg-gray-50 cursor-pointer"
-                          onClick={() => handleSelectStudent(student)}
+                          className="flex justify-between items-center p-3 bg-white border rounded-md hover:bg-gray-50"
                         >
                           <div>
                             <h3 className="font-medium">{student.name}</h3>
                             <p className="text-sm text-muted-foreground">Matrícula: {student.registration}</p>
                           </div>
-                          <div className="flex gap-2">
-                            <Button variant="ghost" size="sm" onClick={(e) => {
-                              e.stopPropagation();
-                              handleSelectStudent(student);
-                            }}>
-                              <FileText className="h-4 w-4 mr-2" />
-                              Ver Boletim
-                            </Button>
-                            <Button variant="outline" size="sm" onClick={(e) => {
-                              e.stopPropagation();
-                              navigateToFullReportCard(student.id);
-                            }}>
-                              <ExternalLink className="h-4 w-4 mr-2" />
-                              Tela Completa
-                            </Button>
-                          </div>
                         </div>
                       ))}
                     </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              
-              <TabsContent value="add-student" className="mt-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Adicionar Novo Aluno</CardTitle>
-                    <CardDescription>
-                      Preencha os dados para adicionar um novo aluno à lista
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <StudentForm onAddStudent={handleAddStudent} />
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="report-card" className="mt-4">
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between">
-                    <div>
-                      <CardTitle>Boletim Escolar</CardTitle>
-                      <CardDescription>
-                        {selectedStudent 
-                          ? `Visualizando boletim de ${selectedStudent.name}`
-                          : 'Selecione um aluno na aba "Alunos" para visualizar o boletim'}
-                      </CardDescription>
-                    </div>
-                    {selectedStudent && (
-                      <Button variant="outline" size="sm" onClick={() => navigateToFullReportCard(selectedStudent.id)}>
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        Ver em Tela Completa
-                      </Button>
-                    )}
-                  </CardHeader>
-                  <CardContent>
-                    {selectedStudent ? (
-                      <div className="max-h-[600px] overflow-y-auto pr-2">
-                        <StudentReportCard 
-                          studentName={selectedStudent.name}
-                          sections={reportCardSections}
-                        />
-                      </div>
-                    ) : (
-                      <div className="text-center py-10">
-                        <FileText className="h-20 w-20 mx-auto text-gray-300 mb-4" />
-                        <p className="text-gray-500">Nenhum aluno selecionado</p>
-                        <Button 
-                          variant="outline" 
-                          onClick={() => navigate('/boletim')} 
-                          className="mt-4"
-                        >
-                          <ExternalLink className="h-4 w-4 mr-2" />
-                          Ir para página de boletins
-                        </Button>
-                      </div>
-                    )}
                   </CardContent>
                 </Card>
               </TabsContent>
