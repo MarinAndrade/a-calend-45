@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,14 @@ import AttendanceCalendar from '@/components/AttendanceCalendar';
 import AttendanceStats from '@/components/AttendanceStats';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarDays, ListCheck, User } from "lucide-react";
+import { 
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "@/components/ui/navigation-menu"
 
 // Mock data for initial students - reutilizando o código existente
 const mockStudents: Student[] = [
@@ -152,7 +161,33 @@ const Turmas = () => {
         </div>
       </header>
       
-      <main className="container py-6">
+      <main className="container mx-auto py-6 px-4">
+        <NavigationMenu className="mb-6">
+          <NavigationMenuList>
+            <NavigationMenuItem>
+              <NavigationMenuLink className="cursor-pointer block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground">
+                Chamada
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <NavigationMenuLink 
+                className="cursor-pointer block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                onClick={() => navigate("/gerenciar")}
+              >
+                Gerenciar
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <NavigationMenuLink 
+                className="cursor-pointer block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                onClick={() => navigate("/boletim")}
+              >
+                Boletim
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+          </NavigationMenuList>
+        </NavigationMenu>
+        
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           <div className="md:col-span-1">
             <AttendanceCalendar 
@@ -171,19 +206,17 @@ const Turmas = () => {
               attendanceRecords={attendanceRecords}
             />
             
-            <Tabs defaultValue="attendance" className="mt-6">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="attendance">
-                  <ListCheck className="h-4 w-4 mr-2" />
-                  Presenças
-                </TabsTrigger>
-                <TabsTrigger value="students">
-                  <User className="h-4 w-4 mr-2" />
-                  Alunos
-                </TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="attendance" className="mt-4">
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ListCheck className="h-5 w-5" />
+                  Chamada
+                </CardTitle>
+                <CardDescription>
+                  {selectedDate.toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
                 <EnhancedStudentList 
                   date={selectedDate}
                   students={students}
@@ -192,33 +225,8 @@ const Turmas = () => {
                   onJustifiedAbsence={handleJustifiedAbsence}
                   justifiedAbsences={justifiedAbsences}
                 />
-              </TabsContent>
-              
-              <TabsContent value="students" className="mt-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Lista de Alunos</CardTitle>
-                    <CardDescription>
-                      Total de {students.length} alunos registrados
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {students.map(student => (
-                        <div 
-                          key={student.id} 
-                          className="flex justify-between items-center p-3 bg-white border rounded-md hover:bg-gray-50"
-                        >
-                          <div>
-                            <h3 className="font-medium">{student.name}</h3>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </main>

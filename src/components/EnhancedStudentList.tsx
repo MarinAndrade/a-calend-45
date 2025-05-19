@@ -101,9 +101,8 @@ const EnhancedStudentList = ({
                 </TableCell>
                 <TableCell className="text-center">
                   <Checkbox 
-                    checked={!isPresent && !isJustified}
+                    checked={!isPresent}
                     onCheckedChange={() => handleAttendanceChange(student.id, 'absent')}
-                    disabled={isJustified} // Cannot be just absent if justified
                   />
                 </TableCell>
                 <TableCell className="text-center">
