@@ -200,13 +200,8 @@ const Turmas = () => {
           </div>
           
           <div className="md:col-span-1 lg:col-span-2">
-            <AttendanceStats 
-              students={students} 
-              selectedDate={selectedDate}
-              attendanceRecords={attendanceRecords}
-            />
-            
-            <Card className="mt-6">
+            {/* MOVED: Chamada section to the top */}
+            <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <ListCheck className="h-5 w-5" />
@@ -227,6 +222,15 @@ const Turmas = () => {
                 />
               </CardContent>
             </Card>
+            
+            {/* MOVED: Attendance stats to the bottom */}
+            <div className="mt-6">
+              <AttendanceStats 
+                students={students} 
+                selectedDate={selectedDate}
+                attendanceRecords={attendanceRecords}
+              />
+            </div>
           </div>
         </div>
       </main>
