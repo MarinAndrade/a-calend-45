@@ -44,7 +44,7 @@ const AttendanceCalendar = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Calendário de Faltas</CardTitle>
+        <CardTitle>Calendário</CardTitle>
         <CardDescription>
           Selecione uma data para gerenciar a presença
         </CardDescription>

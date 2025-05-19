@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -108,10 +107,27 @@ const Turmas = () => {
   const handleAddStudent = (student: Student) => {
     setStudents(prev => [...prev, student]);
   };
-
-  // Handle selecting a student for report card view
-  const handleSelectStudent = (student: Student) => {
-    setSelectedStudent(student);
+  
+  // Handle justified absence
+  const handleJustifiedAbsence = (studentId: string, date: string, isJustified: boolean) => {
+    setJustifiedAbsences(prev => ({
+      ...prev,
+      [studentId]: {
+        ...(prev[studentId] || {}),
+        [date]: isJustified
+      }
+    }));
+    
+    // If justified, also mark as absent (not present)
+    if (isJustified) {
+      setAttendanceRecords(prev => ({
+        ...prev,
+        [studentId]: {
+          ...(prev[studentId] || {}),
+          [date]: false
+        }
+      }));
+    }
   };
   
   // Navegação para o boletim em tela cheia
@@ -153,7 +169,6 @@ const Turmas = () => {
               students={students} 
               selectedDate={selectedDate}
               attendanceRecords={attendanceRecords}
-              justifiedAbsences={justifiedAbsences}
             />
             
             <Tabs defaultValue="attendance" className="mt-6">
@@ -174,6 +189,8 @@ const Turmas = () => {
                   students={students}
                   attendanceRecords={attendanceRecords}
                   onAttendanceChange={handleAttendanceChange}
+                  onJustifiedAbsence={handleJustifiedAbsence}
+                  justifiedAbsences={justifiedAbsences}
                 />
               </TabsContent>
               
